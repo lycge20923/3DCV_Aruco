@@ -9,10 +9,10 @@ import cv2
 import pickle
 import os
 
-dictionary = cv2.aruco.Dictionary_get(cv2.aruco.DICT_7X7_250)
-aruco_dictionary = cv2.aruco.Dictionary_get(cv2.aruco.DICT_7X7_250)
+dictionary = cv2.aruco.Dictionary_get(cv2.aruco.DICT_7X7_250) #Aruco有多種Dictionay，就當作是有不同的編碼方式
 parameters = cv2.aruco.DetectorParameters_create()
 
+# To do Camera Calibration
 def CameraCalibration(CalVideo_pth):
     '''
     input:
@@ -20,14 +20,10 @@ def CameraCalibration(CalVideo_pth):
     output: 
         the pickle file with the 
     '''
-    #Calibration_board = cv2.aruco.CharucoBoard_create(3, 3, \
-    #                                              .025, .0125, dictionary) # create the calibration board
     Calibration_board = cv2.aruco.CharucoBoard_create(7, 9, \
                                                   .0125, .01, dictionary) # create the calibration board
     
-    
-    #Cal_img = Calibration_board.draw((200*3, 200*3))
-    Cap = cv2.VideoCapture(CalVideo_pth)
+    Cap = cv2.VideoCapture(CalVideo_pth) #抓影片
     frameCount = int(Cap.get(cv2.CAP_PROP_FRAME_COUNT))
     all_corners, all_ids, counter = [], [], 0
     for i in range(frameCount):
@@ -97,14 +93,15 @@ if __name__ == '__main__':
         try:
             ret, frame = capture.read() # Capture each frame
             gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # turn to gray
-            corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray_frame, aruco_dictionary, parameters=parameters) # detect markers
-            #print(ids)
+            corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray_frame, dictionary, parameters=parameters) # detect markers
             frame = cv2.aruco.drawDetectedMarkers(image=frame, corners=corners, ids=ids, borderColor=(0, 255, 0)) # draw markers
             frame = cv2.aruco.drawDetectedMarkers(image=frame, corners=rejectedImgPoints, borderColor=(0, 0, 255)) # draw ban markers 
             if ids is not None:
                 rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 1, cameraMatrix, distCoeffs) # rvecs, tvecs are the rotation and transition vectors, speratively 
+                #########  draw the axis  ##########
                 for rvec, tvec in zip(rvecs, tvecs): # draw the axis 
-                    cv2.drawFrameAxes(frame, cameraMatrix, distCoeffs, rvec, tvec, 1)
+                    cv2.drawFrameAxes(frame, cameraMatrix, distCoeffs, rvec, tvec, 1) # show the axises
+                ####################################
             cv2.imshow('frame', frame)
             outvideo.write(frame)
         except:
